@@ -98,7 +98,27 @@ router.put("/:id", async (req, res) => {
 });
 
 // delete data by id
-
+router.delete("/:id", async (req, res) => {
+  const isValidId = validateId(req.params.id);
+  if (isValidId) {
+    const genre = await Genre.findById(req.params.id);
+    if (!genre) {
+      return res.status(404).send("Genre with the given id is not defind.");
+    }
+    try {
+      const result = await genre.deleteOne();
+      res.send(result);
+    } catch (err) {
+      console.error(err);
+    }
+  } else {
+    res
+      .status(400)
+      .send(
+        "Given id must be a string of 12 bytes or a string of 24 hex characters or an integer"
+      );
+  }
+});
 module.exports = router;
 
 // Validate request
