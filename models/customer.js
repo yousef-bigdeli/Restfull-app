@@ -1,26 +1,29 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 
-const Customer = mongoose.model("customer", {
-  name: {
-    type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 255,
-  },
-  isGold: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  phone: {
-    type: String,
-    required: true,
-    minlength: 9,
-    maxlength: 11,
-  },
-  date: { type: Date, default: Date.now },
-});
+const Customer = mongoose.model(
+  "customer",
+  new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
+      minlength: 5,
+      maxlength: 255,
+    },
+    isGold: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    phone: {
+      type: String,
+      required: true,
+      minlength: 9,
+      maxlength: 11,
+    },
+    date: { type: Date, default: Date.now },
+  })
+);
 
 // Validate request
 function validateBody(body) {
