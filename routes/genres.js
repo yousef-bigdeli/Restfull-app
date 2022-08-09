@@ -4,8 +4,8 @@ const Joi = require("joi");
 const express = require("express");
 const router = express.Router();
 
-// Sceham
-const genresSchema = new mongoose.Schema({
+// Model
+const Genre = mongoose.model("genre", {
   name: {
     type: String,
     required: true,
@@ -14,9 +14,6 @@ const genresSchema = new mongoose.Schema({
   },
   date: { type: Date, default: Date.now },
 });
-
-// Model
-const Genre = mongoose.model("genre", genresSchema);
 
 // Get all data
 router.get("/", async (req, res) => {
@@ -28,12 +25,10 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const isValidId = validateId(req.params.id);
   if (isValidId) {
-    const result = await Genre.findById(req.params.id).sort("name");
-    if (result) {
-      res.send(result);
-    } else {
-      res.status(404).send("Genre with the given id is not defind.");
-    }
+    const genre = await Genre.findById(req.params.id);
+    if (!genre)
+      res.status(404).send("The genre with the given ID was not found.");
+    res.send(genre);
   } else {
     res
       .status(400)
@@ -48,11 +43,11 @@ router.post("/", async (req, res) => {
   const { error } = validateBody(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  const newGenre = new Genre(req.body);
+  let genre = new Genre(req.body);
 
   try {
-    const result = newGenre.save();
-    res.send(newGenre);
+    genre = await genre.save();
+    res.send(genre);
   } catch (err) {
     console.error(err);
   }
@@ -64,20 +59,13 @@ router.put("/:id", async (req, res) => {
   if (isValidId) {
     const { error } = validateBody(req.body);
     if (error) return res.status(400).send(error.details[0].message);
+    
+    const genre = await Genre.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
-    const genre = await Genre.findById(req.params.id);
-    if (!genre) {
-      return res.status(404).send("Genre with the given id is not defind.");
-    } else {
-      genre.name = req.body.name;
-    }
+    if (!genre)
+      return res.status(404).send("The genre with the given ID was not found.");
 
-    try {
-      const result = await genre.save();
-      res.send(result);
-    } catch (err) {
-      console.error(err);
-    }
+    res.send(genre);
   } else {
     res
       .status(400)
@@ -91,16 +79,11 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const isValidId = validateId(req.params.id);
   if (isValidId) {
-    const genre = await Genre.findById(req.params.id);
-    if (!genre) {
-      return res.status(404).send("Genre with the given id is not defind.");
-    }
-    try {
-      const result = await genre.deleteOne();
-      res.send(result);
-    } catch (err) {
-      console.error(err);
-    }
+    const genre = await Genre.findByIdAndRemove(req.params.id);
+    if (!genre)
+      return res.status(404).send("The genre with the given ID was not found.");
+
+    res.send(genre);
   } else {
     res
       .status(400)
@@ -109,6 +92,7 @@ router.delete("/:id", async (req, res) => {
       );
   }
 });
+
 module.exports = router;
 
 // Validate request
