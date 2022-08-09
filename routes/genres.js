@@ -69,6 +69,33 @@ router.post("/", async (req, res) => {
 });
 
 // Update data by id
+router.put("/:id", async (req, res) => {
+  const isValidId = validateId(req.params.id);
+  if (isValidId) {
+    const { error } = validateBody(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const genre = await Genre.findById(req.params.id);
+    if (!genre) {
+      return res.status(404).send("Genre with the given id is not defind.");
+    } else {
+      genre.name = req.body.name;
+    }
+
+    try {
+      const result = await genre.save();
+      res.send(result);
+    } catch (err) {
+      console.error(err);
+    }
+  } else {
+    res
+      .status(400)
+      .send(
+        "Given id must be a string of 12 bytes or a string of 24 hex characters or an integer"
+      );
+  }
+});
 
 // delete data by id
 
