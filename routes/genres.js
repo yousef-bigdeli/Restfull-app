@@ -1,19 +1,6 @@
-const dotenv = require("dotenv").config();
-const mongoose = require("mongoose");
-const Joi = require("joi");
 const express = require("express");
 const router = express.Router();
-
-// Model
-const Genre = mongoose.model("genre", {
-  name: {
-    type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 255,
-  },
-  date: { type: Date, default: Date.now },
-});
+const { Genre, validateBody, validateId } = require("../models/genres");
 
 // Get all data
 router.get("/", async (req, res) => {
@@ -59,8 +46,10 @@ router.put("/:id", async (req, res) => {
   if (isValidId) {
     const { error } = validateBody(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-    
-    const genre = await Genre.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+    const genre = await Genre.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
     if (!genre)
       return res.status(404).send("The genre with the given ID was not found.");
@@ -94,15 +83,3 @@ router.delete("/:id", async (req, res) => {
 });
 
 module.exports = router;
-
-// Validate request
-function validateBody(body) {
-  const schema = Joi.object({
-    name: Joi.string().required().min(5).max(255),
-  });
-  return schema.validate(body);
-}
-
-function validateId(id) {
-  return id.length === 12 || id.length === 24;
-}
