@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 
-const Genre = mongoose.model("genre", {
+const genreSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -10,6 +10,8 @@ const Genre = mongoose.model("genre", {
   },
   date: { type: Date, default: Date.now },
 });
+
+const Genre = mongoose.model("genre", genreSchema);
 
 // Validate request
 function validateBody(body) {
@@ -26,3 +28,4 @@ function validateId(id) {
 exports.Genre = Genre;
 exports.validateBody = validateBody;
 exports.validateId = validateId;
+exports.genreSchema = genreSchema;
