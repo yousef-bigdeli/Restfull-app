@@ -28,6 +28,31 @@ const genresSchema = new mongoose.Schema({
 // Model
 const Genre = mongoose.model("genre", genresSchema);
 
+// Get all data
+router.get("/", async (req, res) => {
+  const result = await Genre.find().sort("name");
+  res.send(result);
+});
+
+// Get data by ID
+router.get("/:id", async (req, res) => {
+  const isValidId = validateId(req.params.id);
+  if (isValidId) {
+    const result = await Genre.findById(req.params.id).sort("name");
+    if (result) {
+      res.send(result);
+    } else {
+      res.status(404).send("Genre with the given id is not defind.");
+    }
+  } else {
+    res
+      .status(400)
+      .send(
+        "Given id must be a string of 12 bytes or a string of 24 hex characters or an integer"
+      );
+  }
+});
+
 // Create data
 router.post("/", async (req, res) => {
   const { error } = validateBody(req.body);
@@ -57,3 +82,6 @@ function validateBody(body) {
   return schema.validate(body);
 }
 
+function validateId(id) {
+  return id.length === 12 || id.length === 24;
+}
