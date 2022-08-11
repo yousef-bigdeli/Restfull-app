@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const conn = require("../models/connection");
-const { Rental, validateReqBody, validateId } = require("../models/rentals");
+const { Rental, validateReqBody } = require("../models/rentals");
 const { Customer } = require("../models/customer");
 const { Movie } = require("../models/movies");
+const { default: mongoose } = require("mongoose");
 
 router.get("/", async (req, res) => {
   const result = await Rental.find().sort("-dateOut");
@@ -11,8 +12,9 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const error = validateId(req.params.id);
-  if (error) return res.status(400).send(error);
+  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
+  if (!isValidId)
+    return res.status(400).send("Given id fails to match the valid id pattern");
 
   const result = await Rental.findById(req.params.id);
   if (!result)
@@ -67,14 +69,17 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/:id", async (req, res) => {
-  const error = validateId(req.params.id);
-  if (error) return res.status(400).send(error);
+  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
+  if (!isValidId)
+    return res.status(400).send("Given id fails to match the valid id pattern");
+
   res.send("result");
 });
 
 router.delete("/:id", async (req, res) => {
-  const error = validateId(req.params.id);
-  if (error) return res.status(400).send(error);
+  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
+  if (!isValidId)
+    return res.status(400).send("Given id fails to match the valid id pattern");
 
   const rental = await Rental.findByIdAndRemove(req.params.id);
   if (!rental)

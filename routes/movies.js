@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Movie, validateBody, validateId } = require("../models/movies");
+const { Movie, validateBody } = require("../models/movies");
 const { Genre } = require("../models/genres");
 
 // Get all data
@@ -11,19 +11,14 @@ router.get("/", async (req, res) => {
 
 // Get data by ID
 router.get("/:id", async (req, res) => {
-  const isValidId = validateId(req.params.id);
-  if (isValidId) {
-    const movie = await Movie.findById(req.params.id);
-    if (!movie)
-      res.status(404).send("The movie with the given ID was not found.");
-    res.send(movie);
-  } else {
-    res
-      .status(400)
-      .send(
-        "Given id must be a string of 12 bytes or a string of 24 hex characters or an integer"
-      );
-  }
+  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
+  if (!isValidId)
+    return res.status(400).send("Given id fails to match the valid id pattern");
+
+  const movie = await Movie.findById(req.params.id);
+  if (!movie)
+    res.status(404).send("The movie with the given ID was not found.");
+  res.send(movie);
 });
 
 // Create data
@@ -54,44 +49,32 @@ router.post("/", async (req, res) => {
 
 // Update data by id
 router.put("/:id", async (req, res) => {
-  const isValidId = validateId(req.params.id);
-  if (isValidId) {
-    const { error } = validateBody(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
+  if (!isValidId)
+    return res.status(400).send("Given id fails to match the valid id pattern");
 
-    const movie = await Movie.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+  const { error } = validateBody(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
 
-    if (!movie)
-      return res.status(404).send("The movie with the given ID was not found.");
-
-    res.send(movie);
-  } else {
-    res
-      .status(400)
-      .send(
-        "Given id must be a string of 12 bytes or a string of 24 hex characters or an integer"
-      );
-  }
+  const movie = await Movie.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
+  if (!movie)
+    return res.status(404).send("The movie with the given ID was not found.");
+  res.send(movie);
 });
 
 // delete data by id
 router.delete("/:id", async (req, res) => {
-  const isValidId = validateId(req.params.id);
-  if (isValidId) {
-    const movie = await Movie.findByIdAndRemove(req.params.id);
-    if (!movie)
-      return res.status(404).send("The movie with the given ID was not found.");
+  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
+  if (!isValidId)
+    return res.status(400).send("Given id fails to match the valid id pattern");
 
-    res.send(movie);
-  } else {
-    res
-      .status(400)
-      .send(
-        "Given id must be a string of 12 bytes or a string of 24 hex characters or an integer"
-      );
-  }
+  const movie = await Movie.findByIdAndRemove(req.params.id);
+  if (!movie)
+    return res.status(404).send("The movie with the given ID was not found.");
+
+  res.send(movie);
 });
 
 module.exports = router;

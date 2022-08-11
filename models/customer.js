@@ -35,10 +35,5 @@ function validateBody(body) {
   return schema.validate(body);
 }
 
-function validateId(id) {
-  return id.length === 12 || id.length === 24;
-}
-
 exports.Customer = Customer;
 exports.validateBody = validateBody;
-exports.validateId = validateId;

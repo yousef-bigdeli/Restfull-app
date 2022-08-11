@@ -21,11 +21,5 @@ function validateBody(body) {
   return schema.validate(body);
 }
 
-function validateId(id) {
-  return id.length === 12 || id.length === 24;
-}
-
 exports.Genre = Genre;
 exports.validateBody = validateBody;
-exports.validateId = validateId;
-exports.genreSchema = genreSchema;
