@@ -33,8 +33,8 @@ router.post("/", async (req, res) => {
     customer = await customer.save();
     res.send(customer);
   } catch (err) {
-    res.status(500).send("Server Error.");
     console.error(err);
+    res.status(500).send("Server Error.");
   }
 });
 
