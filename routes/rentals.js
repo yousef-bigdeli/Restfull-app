@@ -21,6 +21,10 @@ router.get("/:id", async (req, res) => {
   res.send(result);
 });
 
+/*
+  >> To use transaction in mongodb, use replica set instead of standalone (in development)
+*/
+
 router.post("/", async (req, res) => {
   // validation request body with Joi
   const { error } = validateReqBody(req.body);
