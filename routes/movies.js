@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Movie, validateBody } = require("../models/movies");
 const { Genre } = require("../models/genres");
+const { validationId } = require("../utils/validationMongoId");
 
 // Get all data
 router.get("/", async (req, res) => {
@@ -11,13 +12,12 @@ router.get("/", async (req, res) => {
 
 // Get data by ID
 router.get("/:id", async (req, res) => {
-  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
-  if (!isValidId)
-    return res.status(400).send("Given id fails to match the valid id pattern");
+  const { message, isValid } = validationId(req.params.id);
+  if (!isValid) return res.status(400).send(message);
 
   const movie = await Movie.findById(req.params.id);
   if (!movie)
-    res.status(404).send("The movie with the given ID was not found.");
+    return res.status(404).send("The movie with the given ID was not found.");
   res.send(movie);
 });
 
@@ -49,9 +49,8 @@ router.post("/", async (req, res) => {
 
 // Update data by id
 router.put("/:id", async (req, res) => {
-  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
-  if (!isValidId)
-    return res.status(400).send("Given id fails to match the valid id pattern");
+  const { message, isValid } = validationId(req.params.id);
+  if (!isValid) return res.status(400).send(message);
 
   const { error } = validateBody(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -66,9 +65,8 @@ router.put("/:id", async (req, res) => {
 
 // delete data by id
 router.delete("/:id", async (req, res) => {
-  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
-  if (!isValidId)
-    return res.status(400).send("Given id fails to match the valid id pattern");
+  const { message, isValid } = validationId(req.params.id);
+  if (!isValid) return res.status(400).send(message);
 
   const movie = await Movie.findByIdAndRemove(req.params.id);
   if (!movie)

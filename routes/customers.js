@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Customer, validateBody } = require("../models/customer");
+const { validationId } = require("../utils/validationMongoId");
 
 // Get all data
 router.get("/", async (req, res) => {
@@ -10,13 +11,14 @@ router.get("/", async (req, res) => {
 
 // Get data by ID
 router.get("/:id", async (req, res) => {
-  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
-  if (!isValidId)
-    return res.status(400).send("Given id fails to match the valid id pattern");
+  const { message, isValid } = validationId(req.params.id);
+  if (!isValid) return res.status(400).send(message);
 
   const customer = await Customer.findById(req.params.id);
   if (!customer)
-    res.status(404).send("The customer with the given ID was not found.");
+    return res
+      .status(404)
+      .send("The customer with the given ID was not found.");
   res.send(customer);
 });
 
@@ -31,15 +33,15 @@ router.post("/", async (req, res) => {
     customer = await customer.save();
     res.send(customer);
   } catch (err) {
+    res.status(500).send("Server Error.");
     console.error(err);
   }
 });
 
 // Update data by id
 router.put("/:id", async (req, res) => {
-  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
-  if (!isValidId)
-    return res.status(400).send("Given id fails to match the valid id pattern");
+  const { message, isValid } = validationId(req.params.id);
+  if (!isValid) return res.status(400).send(message);
 
   const { error } = validateBody(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -57,9 +59,8 @@ router.put("/:id", async (req, res) => {
 
 // delete data by id
 router.delete("/:id", async (req, res) => {
-  const isValidId = mongoose.Types.ObjectId.isValid(req.params.id);
-  if (!isValidId)
-    return res.status(400).send("Given id fails to match the valid id pattern");
+  const { message, isValid } = validationId(req.params.id);
+  if (!isValid) return res.status(400).send(message);
 
   const customer = await Customer.findByIdAndRemove(req.params.id);
   if (!customer)
